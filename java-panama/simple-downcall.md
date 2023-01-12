@@ -68,7 +68,7 @@ SymbolLookup linkerLookup = linker.defaultLookup();</copy>
 Perform the lookup with the target function name, this will return a [memory segment](https://docs.oracle.com/en/java/javase/19/docs/api/java.base/java/lang/foreign/MemorySegment.html).
 
 ```
-MemorySegment memSegment = linkerLookup.lookup(functionName).get();
+MemorySegment memSegment = linkerLookup.find(functionName).get();
 ```
 
 3. Create a FunctionDecriptor
@@ -76,7 +76,7 @@ MemorySegment memSegment = linkerLookup.lookup(functionName).get();
 You should now create a [FunctionDescriptor](https://docs.oracle.com/en/java/javase/19/docs/api/java.base/java/lang/foreign/FunctionDescriptor.html) that matches the `int atoi ( const char * str )` signature.
 
 ```java
-<copy>FunctionDescriptor funcDescriptor = FunctionDescriptor.of(JAVA_INT, ADDRESS);</copy>
+<copy>FunctionDescriptor funcDescriptor = FunctionDescriptor.of(JAVA_INT, ADDRESS.asUnbound());</copy>
 ```
 
 4. Create a Method Handle
@@ -84,7 +84,7 @@ You should now create a [FunctionDescriptor](https://docs.oracle.com/en/java/jav
 Using the FunctionDescriptor, you can now create the corresponding [Method Handle](https://docs.oracle.com/en/java/javase/19/docs/api/java.base/java/lang/invoke/MethodHandle.html).
 
 ```java
-<copy>MethodHandle funcHandle = linker.downcallHandle(memSegment.address(), funcDescriptor);</copy>
+<copy>MethodHandle funcHandle = linker.downcallHandle(memSegment, funcDescriptor);</copy>
 ```
 
 5. Invoke the function
@@ -92,10 +92,10 @@ Using the FunctionDescriptor, you can now create the corresponding [Method Handl
 Using the newly created MethodHandle, you can now invoke the native function. You should cast the returned object to `int`.
 
 ```java
-<copy>try (var memorySession = MemorySession.openConfined()) {
-   var segment = memorySession.allocateUtf8String(payload);
-   int result = (int) funcHandle.invoke(segment);
-   System.out.println("The answer is " + result*2);
+<copy>try (var arena = Arena.openConfined()) {
+    MemorySegment memorySegment = arena.allocateUtf8String(payload);
+    int result = (int) funcHandle.invoke(memorySegment);
+    System.out.println("The answer is " + result*2);
 }</copy>
 ```
 6. Fix the imports
@@ -119,15 +119,15 @@ public class Simple {
 
         SymbolLookup linkerLookup = linker.defaultLookup();
 
-        MemorySegment memSegment = linkerLookup.lookup(functionName).get();
+        MemorySegment memSegment = linkerLookup.find(functionName).get();
 
-        FunctionDescriptor funcDescriptor = FunctionDescriptor.of(JAVA_INT, ADDRESS);
+        FunctionDescriptor funcDescriptor = FunctionDescriptor.of(JAVA_INT, ADDRESS.asUnbound());
 
         MethodHandle funcHandle = linker.downcallHandle(memSegment.address(), funcDescriptor);
 
-        try (var memorySession = MemorySession.openConfined()) {
-            var segment = memorySession.allocateUtf8String(payload);
-            int result = (int) funcHandle.invoke(segment);
+        try (var arena = Arena.openConfined()) {
+            MemorySegment memorySegment = arena.allocateUtf8String(payload);
+            int result = (int) funcHandle.invoke(memorySegment);
             System.out.println("The answer is " + result*2);
         }
     }
@@ -141,7 +141,7 @@ You can now compile and test the class. Do keep in mind that the FFM API is a Pr
 
 
 ```java
-<copy>javac --enable-preview --release 19 Simple.java</copy>
+<copy>javac --enable-preview --release 20 Simple.java</copy>
 ```
 
 The javac compiler will inform you that you are using Preview Feature. This is not a warning, so there's nothing to worry about.
@@ -160,7 +160,7 @@ Preview features should also be enabled at runtime.
 You can get rid of the FFM warnings but also perform the compilation and execution in a single command.
 
 ```text
-<copy>java --enable-preview --source 19 --enable-native-access=ALL-UNNAMED Simple.java</copy>
+<copy>java --enable-preview --source 20 --enable-native-access=ALL-UNNAMED Simple.java</copy>
 ```
 
 

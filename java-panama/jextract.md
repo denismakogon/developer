@@ -403,8 +403,8 @@ public class AtoiTest {
 
      String payload = "21";
 
-     try (var memorySession = MemorySession.openConfined()) {
-        int result = (int) stdlib_h.atoi( memorySession.allocateUtf8String(payload) );
+     try (var arena = Arena.openConfined()) {
+        int result = (int) stdlib_h.atoi( arena.allocateUtf8String(payload) );
         System.out.println("The answer via the native `atoi` function is " + result*2);
      }
   }
@@ -414,17 +414,17 @@ public class AtoiTest {
 ```
 
 
-The key line is : ```int result = (int) stdlib_h.atoi( memorySession.allocateUtf8String(payload) );```
-* `memorySession.allocateUtf8String(payload)` allocates some foreign memory holidng the `payload` string to be passed to the foregien function. 
+The key line is : ```int result = (int) stdlib_h.atoi( arena.allocateUtf8String(payload) );```
+* `arena.allocateUtf8String(payload)` allocates some foreign memory holding the `payload` string to be passed to the foreign function. 
 * `stdlib_h.atoi()` is the Method Handle wrapping the foreign function.
-* Once invoked, this Method Handle returns an `java.lang.object` carrying the result of the foreign function. That object is then casted to an `int`.
+* Once invoked, this Method Handle returns an `java.lang.object` carrying the result of the foreign function. That object is then cast to an `int`.
 
 
 3. Run your code
 
 Compile your code.
 ```text
-> <copy>javac -classpath src/main/java/ -d target --enable-preview --source 19 src/main/java/AtoiTest.java</copy>
+> <copy>javac -classpath src/main/java/ -d target --enable-preview --source 20 src/main/java/AtoiTest.java</copy>
 
 Note: Some input files use preview features of Java SE 19.
 Note: Recompile with -Xlint:preview for details.

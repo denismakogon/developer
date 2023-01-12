@@ -13,7 +13,7 @@ Estimated Time: ~10 minutes
 
 The Foreign Function & Memory (FFM) API, defined in JEP 424, introduces an API by which Java programs can interoperate with code and data outside of the Java runtime. The FFM API enables (1) to efficiently invoke **foreign functions** (i.e., code outside the JVM) and (2) to safely access **foreign memory** (i.e., memory not managed by the JVM). In practice, the FFM API defines classes and interfaces so that client code can
 
-   * Allocate foreign memory (`MemorySegment`, `MemoryAddress`, and `SegmentAllocator`),
+   * Allocate foreign memory (`MemorySegment` and `Arena`),
    * manipulate and access structured foreign memory (`MemoryLayout`),
    * control the allocation and deallocation of foreign memory (`MemorySession`), and
    * call foreign functions (`Linker`, `FunctionDescriptor`, and `SymbolLookup`).
@@ -65,7 +65,7 @@ Preview features are also specific to a given Java SE feature release and requir
 
 ```java
 // compile time
-javac --enable-preview --release 19 MyClass.java
+javac --enable-preview --release 20 MyClass.java
 ```
 
 ```java
@@ -88,7 +88,7 @@ You will always get a message informing you, at both compile time and at runtime
 
 
 ```text 
-> javac --enable-preview --release 19 …
+> javac --enable-preview --release 20 …
 Note: Simple.java uses preview features of Java SE 19.
 Note: Recompile with -Xlint:preview for details.
 …
@@ -115,7 +115,7 @@ The example below invokes the Java launcher (`java`), not the Java compiler (`ja
 
 ```java
 // compile *and* run MyClass.java
-java --enable-preview --source 19 MyClass.java
+java --enable-preview --source 20 MyClass.java
 ```
 
 Using the traditional approach, i.e. `javac` and `java`, or the other, i.e. just `java` is just a matter of preferences. In the end, the same underlying operations are always performed.

@@ -154,8 +154,8 @@ Create an `Upcall.java` application class with 2 simples methods : `callback()` 
 
       private static final SymbolLookup
           symbolLookup = name ->
-             systemLookup.lookup(name)
-                         .or(() -> linkerLookup.lookup(name));
+             systemLookup.find(name)
+                         .or(() -> linkerLookup.find(name));
       </copy>
       …
 ```
@@ -203,7 +203,7 @@ Define a method handle for the `void callback()` method.
       …
       <copy>
       static final MethodHandle nativeFunctionWithCallback
-         = symbolLookup.lookup("callback_function")
+         = symbolLookup.find("callback_function")
               .map(add ->
                   linker.downcallHandle(add, FunctionDescriptor.ofVoid(ADDRESS))
                ).orElseThrow();
@@ -230,11 +230,11 @@ To invoke a foregin function, you need to create an [upcall stub](https://docs.o
       System.out.println("Java\t main() method");
 
       <copy>
-      var ms = MemorySession.openConfined();
+      var arena = Arena.openConfined();
       var callbackNativeSymbolSegment = linker.upcallStub(
-                  callbackHandle, callbackDescriptor, ms);
+                  callbackHandle, callbackDescriptor, arena.scope());
 
-      nativeFunctionWithCallback.invokeExact((Addressable) callbackNativeSymbolSegment);
+      nativeFunctionWithCallback.invokeExact(callbackNativeSymbolSegment.address());
       </copy>
 
       System.out.println("Java\t main() method exit");
@@ -262,7 +262,7 @@ You can now compile and run the code.
 
 ```java
       <copy>
-      java -Dlib.path=$PWD/lib.platform --enable-native-access=ALL-UNNAMED --enable-preview --source 19 Upcall.java
+      java -Dlib.path=$PWD/lib.platform --enable-native-access=ALL-UNNAMED --enable-preview --source 20 Upcall.java
       </copy>
 ````
 
